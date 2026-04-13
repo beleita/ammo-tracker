@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AmmoSeek Price Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f13; color: #e0e0e0; min-height: 100vh; }
+    header { background: #1a1a24; border-bottom: 2px solid #c8960c; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 1.5rem; color: #c8960c; }
+    .last-updated { font-size: 0.8rem; color: #666; }
+    .controls { padding: 20px 24px 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .btn { background: #2a2a36; border: 1px solid #444; color: #ccc; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+    .btn:hover { background: #3a3a4a; border-color: #c8960c; color: #c8960c; }
+    .btn.active { background: #c8960c22; border-color: #c8960c; color: #c8960c; }
+    .search-filter { background: #1a1a24; border: 1px solid #333; color: #ccc; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; min-width: 200px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(560px, 1fr)); gap: 20px; padding: 20px 24px; }
+    .card { background: #1a1a24; border: 1px solid #2a2a36; border-radius: 12px; overflow: hidden; }
+    .card-header { padding: 14px 18px 10px; border-bottom: 1px solid #2a2a36; display: flex; justify-content: space-between; align-items: flex-start; }
+    .card-title { font-size: 0.95rem; font-weight: 600; color: #e0e0e0; }
+    .card-url a { color: #c8960c88; text-decoration: none; font-size: 0.72rem; }
+    .card-stats { display: flex; gap: 16px; }
+    .stat { text-align: right; }
+    .stat-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
+    .stat-value { font-size: 1.1rem; font-weight: 700; }
+    .stat-value.best { color: #4ade80; }
+    .stat-value.second { color: #60a5fa; }
+    .chart-container { padding: 8px 14px 14px; height: 200px; position: relative; }
+    .latest-table { padding: 0 14px 14px; }
+    .latest-table table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .latest-table th { color: #666; font-weight: 500; padding: 4px 8px; text-align: left; border-bottom: 1px solid #2a2a36; }
+    .latest-table td { padding: 5px 8px; border-bottom: 1px solid #1e1e28; }
+    .rank-1 td:first-child::before { content: "1st "; }
+    .rank-2 td:first-child::before { content: "2nd "; }
+    .cpr-cell { font-weight: 700; }
+    .cpr-1 { color: #4ade80; }
+    .cpr-2 { color: #60a5fa; }
+    .shipping-F { color: #4ade80; font-size: 0.75rem; }
+    .no-data { text-align: center; padding: 40px; color: #444; }
+    .delta { font-size: 0.75rem; margin-left: 6px; }
+    .delta.up { color: #f87171; }
+    .delta.down { color: #4ade80; }
+    .summary-bar { display: flex; gap: 20px; padding: 12px 24px; background: #15151e; border-bottom: 1px solid #2a2a36; flex-wrap: wrap; }
+    .summary-item { font-size: 0.8rem; }
+    .summary-item span { color: #888; }
+    .summary-item strong { color: #c8960c; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>AmmoSeek Price Tracker</h1><div style="font-size:0.85rem;color:#888">Daily best prices</div></div>
+    <div class="last-updated" id="lastUpdated">Loading...</div>
+  </header>
+  <div class="summary-bar" id="summaryBar"></div>
+  <div class="controls">
+    <input type="text" class="search-filter" id="searchFilter" placeholder="Filter by caliber..." oninput="filterCards()">
+    <button class="btn active" onclick="toggleView('all')" id="btnAll">All</button>
+    <button class="btn" onclick="toggleView('9mm')" id="btn9mm">9mm</button>
+    <button class="btn" onclick="toggleView('rifle')" id="btnRifle">Rifle</button>
+    <select class="search-filter" id="dateRange" onchange="renderAll()" style="min-width:150px">
+      <option value="30">Last 30 days</option>
+      <option value="90">Last 90 days</option>
+      <option value="180">Last 180 days</option>
+      <option value="all">All time</option>
+    </select>
+  </div>
+  <div class="grid" id="grid"></div>
+  <script>
+    let D=null;
+    async function loadData(){
+      try{const r=await fetch('ammo_prices.json?t='+Date.now());if(!r.ok)throw 0;D=await r.json();renderAll();}catch(e){
+        document.getElementById('grid').innerHTML='<div class="no-data" style="grid-column:1/-1"><h3>No data yet</h3><p>Go to Actions tab in GitHub and run the workflow manually.</p></div>';
+        document.getElementById('lastUpdated').textContent='No data yet';}
+    }
+    function filterCards(){const q=document.getElementById('searchFilter').value.toLowerCase();document.querySelectorAll('.card[data-id]').forEach(c=>{c.style.display=c.getAttribute('data-label').toLowerCase().includes(q)?'':'none';});}
+    function toggleView(t){document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));document.getElementById('btn'+(t==='all'?'All':t==='9mm'?'9mm':'Rifle')).classList.add('active');document.querySelectorAll('.card[data-id]').forEach(c=>{const l=c.getAttribute('data-label').toLowerCase();c.style.display=t==='all'?'':(t==='9mm'?l.includes('9mm'):!l.includes('9mm'))?'':'none';});}
+    function getDR(){const v=document.getElementById('dateRange').value;if(v==='all')return null;const d=new Date();d.setDate(d.getDate()-parseInt(v));return d.toISOString().split('T')[0];}
+    function renderAll(){if(!D)return;const grid=document.getElementById('grid');grid.innerHTML='';const cut=getDR();let sh='';for(const[sid,s]of Object.entries(D.searches||{})){const h=s.history||[],f=cut?h.filter(x=>x.date>=cut):h,l=f[f.length-1];if(l&&l.results&&l.results[0])sh+='<div class="summary-item"><span>'+s.label+': </span><strong>'+l.results[0].cpr_text+'</strong></div>';renderCard(s,sid,f);}document.getElementById('summaryBar').innerHTML=sh||'<span style="color:#555">No data yet</span>';if(D.last_updated){const d=new Date(D.last_updated);document.getElementById('lastUpdated').textContent='Updated: '+d.toLocaleString();}}
+    const CI={};
+    function renderCard(s,sid,h){const grid=document.getElementById('grid'),l=h[h.length-1],p=h[h.length-2],card=document.createElement('div');card.className='card';card.setAttribute('data-id',sid);card.setAttribute('data-label',s.label);let b1='--',b2='--',d1='';if(l&&l.results){const r1=l.results[0],r2=l.results[1];b1=r1?r1.cpr_text:'--';b2=r2?r2.cpr_text:'--';if(p&&p.results&&p.results[0]&&r1){const df=r1.cpr-p.results[0].cpr;if(Math.abs(df)>0.1)d1='<span class="delta '+(df>0?'up':'down')+'">'+(df>0?'+':'')+df.toFixed(1)+'c</span>';}}const su=s.url.replace('https://ammoseek.com','');card.innerHTML='<div class="card-header"><div><div class="card-title">'+s.label+'</div><div class="card-url"><a href="'+s.url+'" target="_blank">'+su.substring(0,70)+(su.length>70?'...':'')+'</a></div></div><div class="card-stats"><div class="stat"><div class="stat-label">Best</div><div class="stat-value best">'+b1+d1+'</div></div><div class="stat"><div class="stat-label">2nd</div><div class="stat-value second">'+b2+'</div></div></div></div><div class="chart-container"><canvas id="chart_'+sid+'"></canvas></div><div class="latest-table" id="table_'+sid+'"></div>';grid.appendChild(card);renderChart(sid,h);if(l&&l.results&&l.results.length){document.getElementById('table_'+sid).innerHTML='<table><thead><tr><th>Retailer</th><th>Description</th><th>c/rd</th><th>Total</th><th>Ship</th></tr></thead><tbody>'+l.results.map((r,i)=>'<tr class="rank-'+(i+1)+'"><td>'+r.retailer+'</td><td>'+r.description.substring(0,38)+'</td><td class="cpr-cell cpr-'+(i+1)+'">'+r.cpr_text+'</td><td>'+r.price+'/'+r.rounds+'rd</td><td class="shipping-'+r.shipping+'">'+(r.shipping==='F'?'Free':r.shipping||'-')+'</td></tr>').join('')+'</tbody></table><div style="font-size:0.72rem;color:#555">As of '+l.date+'</div>';}}
+    function renderChart(sid,h){const ctx=document.getElementById('chart_'+sid);if(!ctx)return;if(CI[sid])CI[sid].destroy();const lb=h.map(x=>x.date),d1=h.map(x=>x.results&&x.results[0]?x.results[0].cpr:null),d2=h.map(x=>x.results&&x.results[1]?x.results[1].cpr:null);if(!lb.length){ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#444;font-size:0.85rem">No history yet</div>';return;}if(lb.length===1){lb.push(lb[0]);d1.push(d1[0]);d2.push(d2[0]);}CI[sid]=new Chart(ctx,{type:'line',data:{labels:lb,datasets:[{label:'Best',data:d1,borderColor:'#4ade80',backgroundColor:'#4ade8044',fill:true,tension:0.3,pointRadius:3},{label:'2nd',data:d2,borderColor:'#60a5fa',backgroundColor:'#60a5fa44',fill:false,tension:0.3,pointRadius:3,borderDash:[4,3]}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#888',boxWidth:12,font:{size:11}}},tooltip:{backgroundColor:'#1e1e2e',borderColor:'#444',borderWidth:1,callbacks:{label:c=>' '+c.dataset.label+': '+c.raw?.toFixed(1)+'c/rd'}}},scales:{x:{type:'time',time:{unit:'day',displayFormats:{day:'MMM d'}},ticks:{color:'#555',maxTicksLimit:8,font:{size:10}},grid:{color:'#1e1e28'}},y:{ticks:{color:'#555',font:{size:10},callback:v=>v?.toFixed(0)+'c'},grid:{color:'#1e1e28'}}}}});}
+    loadData();setInterval(loadData,600000);
+  </script>
+</body>
+</html>
