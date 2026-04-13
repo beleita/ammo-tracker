@@ -1,0 +1,125 @@
+{
+  "searches": {
+    "30_carbine": {
+      "label": "30 Carbine",
+      "url": "https://ammoseek.com/ammo/30-carbine?sh=average",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "30_06": {
+      "label": "30-06",
+      "url": "https://ammoseek.com/ammo/30-06?sh=low",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "300_aac_subsonic": {
+      "label": ".300 AAC Blackout (Subsonic)",
+      "url": "https://ammoseek.com/ammo/300aac-blackout?sh=average&ikw=subsonic&co=new",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "303_british": {
+      "label": "303 British",
+      "url": "https://ammoseek.com/ammo/303-british?sh=average",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "380_auto": {
+      "label": ".380 Auto",
+      "url": "https://ammoseek.com/ammo/380-auto?sh=average&ekw=Armsocor%20fiocchi%20sinterfire&co=new",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "556_nato": {
+      "label": "5.56x45mm NATO",
+      "url": "https://ammoseek.com/ammo/5.56x45mm-nato?sh=low&ekw=Igmab%20turan&co=new",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "75x55_swiss": {
+      "label": "7.5x55mm Swiss",
+      "url": "https://ammoseek.com/ammo/7.5x55mm-swiss",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "9mm_sb": {
+      "label": "9mm Luger - Sellier & Bellot",
+      "url": "https://ammoseek.com/ammo/9mm-luger/Sellier%20and%20Bellot?sh=lowest&ca=brass&co=new",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "9mm_excl_junk": {
+      "label": "9mm Luger (Excl. junk brands)",
+      "url": "https://ammoseek.com/ammo/9mm-luger?ekw=bps%20x-force%20hughes%20ATS%20turan%20zsr%20maxxtech%20rocketfire%20ytr%20remington%20winchester%202a&sh=low&ca=brass&co=new",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "9mm_147gr": {
+      "label": "9mm Luger 147gr+",
+      "url": "https://ammoseek.com/ammo/9mm-luger/-handgun-147-999grains?sh=low&ca=brass&ekw=bps%20x-force%20blazer%20merica%20hughes%20ATS%20turan%20zsr%20maxxtech%20rocketfire%20ytr%20remington%20winchester%202a&co=new",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "9mm_frangible_premium": {
+      "label": "9mm Luger Frangible (Premium)",
+      "url": "https://ammoseek.com/ammo/9mm-luger?ca=brass&sh=low&co=new&ekw=bps%20x-force%20hughes%20ATS%20veteran%20maxxtech%20ytr%20%241000%20turan%20zsr&ikw=Frangible",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    },
+    "9mm_frangible": {
+      "label": "9mm Luger Frangible",
+      "url": "https://ammoseek.com/ammo/9mm-luger?ikw=frangible&ca=brass&sh=low&co=new",
+      "history": [
+        {
+          "date": "2026-04-13",
+          "results": []
+        }
+      ]
+    }
+  },
+  "last_updated": "2026-04-13T19:48:51.103919+00:00"
+}
