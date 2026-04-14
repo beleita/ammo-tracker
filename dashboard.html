@@ -1,88 +1,373 @@
-<!DOCTYPE html>
+<\!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AmmoSeek Price Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f13; color: #e0e0e0; min-height: 100vh; }
-    header { background: #1a1a24; border-bottom: 2px solid #c8960c; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
-    header h1 { font-size: 1.5rem; color: #c8960c; }
-    .last-updated { font-size: 0.8rem; color: #666; }
-    .controls { padding: 20px 24px 0; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    .btn { background: #2a2a36; border: 1px solid #444; color: #ccc; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
-    .btn:hover { background: #3a3a4a; border-color: #c8960c; color: #c8960c; }
-    .btn.active { background: #c8960c22; border-color: #c8960c; color: #c8960c; }
-    .search-filter { background: #1a1a24; border: 1px solid #333; color: #ccc; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; min-width: 200px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(560px, 1fr)); gap: 20px; padding: 20px 24px; }
-    .card { background: #1a1a24; border: 1px solid #2a2a36; border-radius: 12px; overflow: hidden; }
-    .card-header { padding: 14px 18px 10px; border-bottom: 1px solid #2a2a36; display: flex; justify-content: space-between; align-items: flex-start; }
-    .card-title { font-size: 0.95rem; font-weight: 600; color: #e0e0e0; }
-    .card-url a { color: #c8960c88; text-decoration: none; font-size: 0.72rem; }
-    .card-stats { display: flex; gap: 16px; }
-    .stat { text-align: right; }
-    .stat-label { font-size: 0.7rem; color: #666; text-transform: uppercase; }
-    .stat-value { font-size: 1.1rem; font-weight: 700; }
-    .stat-value.best { color: #4ade80; }
-    .stat-value.second { color: #60a5fa; }
-    .chart-container { padding: 8px 14px 14px; height: 200px; position: relative; }
-    .latest-table { padding: 0 14px 14px; }
-    .latest-table table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    .latest-table th { color: #666; font-weight: 500; padding: 4px 8px; text-align: left; border-bottom: 1px solid #2a2a36; }
-    .latest-table td { padding: 5px 8px; border-bottom: 1px solid #1e1e28; }
-    .rank-1 td:first-child::before { content: "1st "; }
-    .rank-2 td:first-child::before { content: "2nd "; }
-    .cpr-cell { font-weight: 700; }
-    .cpr-1 { color: #4ade80; }
-    .cpr-2 { color: #60a5fa; }
-    .shipping-F { color: #4ade80; font-size: 0.75rem; }
-    .no-data { text-align: center; padding: 40px; color: #444; }
-    .delta { font-size: 0.75rem; margin-left: 6px; }
-    .delta.up { color: #f87171; }
-    .delta.down { color: #4ade80; }
-    .summary-bar { display: flex; gap: 20px; padding: 12px 24px; background: #15151e; border-bottom: 1px solid #2a2a36; flex-wrap: wrap; }
-    .summary-item { font-size: 0.8rem; }
-    .summary-item span { color: #888; }
-    .summary-item strong { color: #c8960c; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ammo Price Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+  /* ââ TICKER BAR ââ */
+  #ticker-wrap {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    overflow: hidden;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  #ticker-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    white-space: nowrap;
+    animation: ticker-scroll 80s linear infinite;
+  }
+  #ticker-track:hover { animation-play-state: paused; }
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .tick-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    border-right: 1px solid #30363d;
+    font-size: 13px;
+    height: 42px;
+  }
+  .tick-label { color: #8b949e; font-weight: 500; letter-spacing: 0.02em; }
+  .tick-price { color: #e6edf3; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tick-sep { color: #30363d; }
+  .tick-change {
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .tick-up   { color: #3fb950; }
+  .tick-down { color: #f85149; }
+  .tick-flat { color: #8b949e; }
+  .tick-period { font-size: 10px; color: #8b949e; font-weight: 400; }
+  .tick-nodata { color: #484f58; font-style: italic; font-size: 12px; }
+
+  /* ââ HEADER ââ */
+  .header {
+    padding: 20px 24px 12px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; color: #e6edf3; }
+  .header .subtitle { font-size: 12px; color: #8b949e; margin-top: 2px; }
+  .controls { display: flex; gap: 6px; align-items: center; }
+  .range-btn {
+    background: none; border: 1px solid #30363d; color: #8b949e;
+    padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;
+    transition: all 0.15s;
+  }
+  .range-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+  .range-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+
+  /* ââ GRID ââ */
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    padding: 16px 24px 32px;
+  }
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .card-title { font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .card-best {
+    text-align: right;
+  }
+  .card-best .cpr { font-size: 22px; font-weight: 700; color: #58a6ff; line-height: 1; }
+  .card-best .retailer { font-size: 11px; color: #8b949e; margin-top: 3px; max-width: 150px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-best .no-data { font-size: 13px; color: #484f58; }
+  .card-changes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .change-pill {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+  .change-pill .period-label { font-weight: 400; color: inherit; opacity: 0.75; font-size: 11px; }
+  .pill-up   { background: rgba(63,185,80,0.12);  color: #3fb950; }
+  .pill-down { background: rgba(248,81,73,0.12);  color: #f85149; }
+  .pill-flat { background: rgba(139,148,158,0.1); color: #8b949e; }
+  .pill-none { background: rgba(139,148,158,0.08); color: #484f58; }
+  .chart-wrap { position: relative; height: 90px; }
+  .card-rows { font-size: 11px; color: #8b949e; border-top: 1px solid #21262d; padding-top: 8px; }
+  .card-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .card-row .name { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-row .price-info { display: flex; gap: 8px; flex-shrink: 0; }
+  .card-row .price-info span { color: #e6edf3; }
+  #footer { text-align: center; font-size: 11px; color: #484f58; padding-bottom: 24px; }
+  .loading { text-align: center; padding: 60px; color: #8b949e; font-size: 14px; }
+</style>
 </head>
 <body>
-  <header>
-    <div><h1>AmmoSeek Price Tracker</h1><div style="font-size:0.85rem;color:#888">Daily best prices</div></div>
-    <div class="last-updated" id="lastUpdated">Loading...</div>
-  </header>
-  <div class="summary-bar" id="summaryBar"></div>
-  <div class="controls">
-    <input type="text" class="search-filter" id="searchFilter" placeholder="Filter by caliber..." oninput="filterCards()">
-    <button class="btn active" onclick="toggleView('all')" id="btnAll">All</button>
-    <button class="btn" onclick="toggleView('9mm')" id="btn9mm">9mm</button>
-    <button class="btn" onclick="toggleView('rifle')" id="btnRifle">Rifle</button>
-    <select class="search-filter" id="dateRange" onchange="renderAll()" style="min-width:150px">
-      <option value="30">Last 30 days</option>
-      <option value="90">Last 90 days</option>
-      <option value="180">Last 180 days</option>
-      <option value="all">All time</option>
-    </select>
+
+<div id="ticker-wrap">
+  <div id="ticker-track"><span class="tick-item" style="color:#484f58">Loading pricesâ¦</span></div>
+</div>
+
+<div class="header">
+  <div>
+    <h1>ð¯ Ammo Price Tracker</h1>
+    <div class="subtitle" id="last-updated">â</div>
   </div>
-  <div class="grid" id="grid"></div>
-  <script>
-    let D=null;
-    async function loadData(){
-      try{const r=await fetch('ammo_prices.json?t='+Date.now());if(!r.ok)throw 0;D=await r.json();renderAll();}catch(e){
-        document.getElementById('grid').innerHTML='<div class="no-data" style="grid-column:1/-1"><h3>No data yet</h3><p>Go to Actions tab in GitHub and run the workflow manually.</p></div>';
-        document.getElementById('lastUpdated').textContent='No data yet';}
+  <div class="controls">
+    <button class="range-btn" data-days="7">7d</button>
+    <button class="range-btn active" data-days="30">30d</button>
+    <button class="range-btn" data-days="90">90d</button>
+    <button class="range-btn" data-days="0">All</button>
+  </div>
+</div>
+
+<div id="grid"><div class="loading">Fetching pricesâ¦</div></div>
+<div id="footer"></div>
+
+<script>
+let _data = null;
+let _days = 30;
+const charts = {};
+
+document.querySelectorAll('.range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _days = parseInt(btn.dataset.days);
+    if (_data) renderAll(_data);
+  });
+});
+
+function getCpr(search, daysAgo) {
+  const hist = search.history || [];
+  if (\!hist.length) return null;
+  if (daysAgo === 0) {
+    // Most recent entry with results
+    for (let i = hist.length - 1; i >= 0; i--) {
+      if (hist[i].results && hist[i].results.length) return hist[i].results[0].cpr;
     }
-    function filterCards(){const q=document.getElementById('searchFilter').value.toLowerCase();document.querySelectorAll('.card[data-id]').forEach(c=>{c.style.display=c.getAttribute('data-label').toLowerCase().includes(q)?'':'none';});}
-    function toggleView(t){document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));document.getElementById('btn'+(t==='all'?'All':t==='9mm'?'9mm':'Rifle')).classList.add('active');document.querySelectorAll('.card[data-id]').forEach(c=>{const l=c.getAttribute('data-label').toLowerCase();c.style.display=t==='all'?'':(t==='9mm'?l.includes('9mm'):!l.includes('9mm'))?'':'none';});}
-    function getDR(){const v=document.getElementById('dateRange').value;if(v==='all')return null;const d=new Date();d.setDate(d.getDate()-parseInt(v));return d.toISOString().split('T')[0];}
-    function renderAll(){if(!D)return;const grid=document.getElementById('grid');grid.innerHTML='';const cut=getDR();let sh='';for(const[sid,s]of Object.entries(D.searches||{})){const h=s.history||[],f=cut?h.filter(x=>x.date>=cut):h,l=f[f.length-1];if(l&&l.results&&l.results[0])sh+='<div class="summary-item"><span>'+s.label+': </span><strong>'+l.results[0].cpr_text+'</strong></div>';renderCard(s,sid,f);}document.getElementById('summaryBar').innerHTML=sh||'<span style="color:#555">No data yet</span>';if(D.last_updated){const d=new Date(D.last_updated);document.getElementById('lastUpdated').textContent='Updated: '+d.toLocaleString();}}
-    const CI={};
-    function renderCard(s,sid,h){const grid=document.getElementById('grid'),l=h[h.length-1],p=h[h.length-2],card=document.createElement('div');card.className='card';card.setAttribute('data-id',sid);card.setAttribute('data-label',s.label);let b1='--',b2='--',d1='';if(l&&l.results){const r1=l.results[0],r2=l.results[1];b1=r1?r1.cpr_text:'--';b2=r2?r2.cpr_text:'--';if(p&&p.results&&p.results[0]&&r1){const df=r1.cpr-p.results[0].cpr;if(Math.abs(df)>0.1)d1='<span class="delta '+(df>0?'up':'down')+'">'+(df>0?'+':'')+df.toFixed(1)+'c</span>';}}const su=s.url.replace('https://ammoseek.com','');card.innerHTML='<div class="card-header"><div><div class="card-title">'+s.label+'</div><div class="card-url"><a href="'+s.url+'" target="_blank">'+su.substring(0,70)+(su.length>70?'...':'')+'</a></div></div><div class="card-stats"><div class="stat"><div class="stat-label">Best</div><div class="stat-value best">'+b1+d1+'</div></div><div class="stat"><div class="stat-label">2nd</div><div class="stat-value second">'+b2+'</div></div></div></div><div class="chart-container"><canvas id="chart_'+sid+'"></canvas></div><div class="latest-table" id="table_'+sid+'"></div>';grid.appendChild(card);renderChart(sid,h);if(l&&l.results&&l.results.length){document.getElementById('table_'+sid).innerHTML='<table><thead><tr><th>Retailer</th><th>Description</th><th>c/rd</th><th>Total</th><th>Ship</th></tr></thead><tbody>'+l.results.map((r,i)=>'<tr class="rank-'+(i+1)+'"><td>'+r.retailer+'</td><td>'+r.description.substring(0,38)+'</td><td class="cpr-cell cpr-'+(i+1)+'">'+r.cpr_text+'</td><td>'+r.price+'/'+r.rounds+'rd</td><td class="shipping-'+r.shipping+'">'+(r.shipping==='F'?'Free':r.shipping||'-')+'</td></tr>').join('')+'</tbody></table><div style="font-size:0.72rem;color:#555">As of '+l.date+'</div>';}}
-    function renderChart(sid,h){const ctx=document.getElementById('chart_'+sid);if(!ctx)return;if(CI[sid])CI[sid].destroy();const lb=h.map(x=>x.date),d1=h.map(x=>x.results&&x.results[0]?x.results[0].cpr:null),d2=h.map(x=>x.results&&x.results[1]?x.results[1].cpr:null);if(!lb.length){ctx.parentElement.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#444;font-size:0.85rem">No history yet</div>';return;}if(lb.length===1){lb.push(lb[0]);d1.push(d1[0]);d2.push(d2[0]);}CI[sid]=new Chart(ctx,{type:'line',data:{labels:lb,datasets:[{label:'Best',data:d1,borderColor:'#4ade80',backgroundColor:'#4ade8044',fill:true,tension:0.3,pointRadius:3},{label:'2nd',data:d2,borderColor:'#60a5fa',backgroundColor:'#60a5fa44',fill:false,tension:0.3,pointRadius:3,borderDash:[4,3]}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{labels:{color:'#888',boxWidth:12,font:{size:11}}},tooltip:{backgroundColor:'#1e1e2e',borderColor:'#444',borderWidth:1,callbacks:{label:c=>' '+c.dataset.label+': '+c.raw?.toFixed(1)+'c/rd'}}},scales:{x:{type:'time',time:{unit:'day',displayFormats:{day:'MMM d'}},ticks:{color:'#555',maxTicksLimit:8,font:{size:10}},grid:{color:'#1e1e28'}},y:{ticks:{color:'#555',font:{size:10},callback:v=>v?.toFixed(0)+'c'},grid:{color:'#1e1e28'}}}}});}
-    loadData();setInterval(loadData,600000);
-  </script>
+    return null;
+  }
+  // Find entry closest to daysAgo days before the latest date
+  const latestDate = hist[hist.length - 1].date;
+  const target = new Date(latestDate);
+  target.setDate(target.getDate() - daysAgo);
+  const targetStr = target.toISOString().slice(0, 10);
+  // Find closest entry on or before target
+  let best = null;
+  for (let i = hist.length - 1; i >= 0; i--) {
+    if (hist[i].date <= targetStr && hist[i].results && hist[i].results.length) {
+      best = hist[i].results[0].cpr;
+      break;
+    }
+  }
+  return best;
+}
+
+function fmtChange(curr, prev) {
+  if (curr === null || prev === null) return null;
+  const diff = curr - prev;
+  const sign = diff > 0 ? '+' : '';
+  const arrow = diff > 0 ? 'â²' : diff < 0 ? 'â¼' : 'â';
+  const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+  return { text: sign + diff.toFixed(1) + 'Â¢', arrow, cls };
+}
+
+function buildTicker(searches) {
+  const items = Object.values(searches).map(s => {
+    const curr  = getCpr(s, 0);
+    const d1    = fmtChange(curr, getCpr(s, 1));
+    const d7    = fmtChange(curr, getCpr(s, 7));
+
+    const priceStr = curr \!== null ? curr.toFixed(1) + 'Â¢' : 'â';
+
+    let d1Html = '', d7Html = '';
+    if (d1) {
+      d1Html = `<span class="tick-change tick-${d1.cls}">${d1.arrow} ${d1.text}</span><span class="tick-period">1d</span>`;
+    }
+    if (d7) {
+      d7Html = `<span class="tick-sep">Â·</span><span class="tick-change tick-${d7.cls}">${d7.arrow} ${d7.text}</span><span class="tick-period">7d</span>`;
+    }
+
+    return `<span class="tick-item">
+      <span class="tick-label">${s.label}</span>
+      <span class="tick-price">${priceStr}</span>
+      ${d1Html}${d7Html}
+    </span>`;
+  });
+
+  // Duplicate for seamless loop
+  const html = items.join('') + items.join('');
+  document.getElementById('ticker-track').innerHTML = html;
+}
+
+function changePill(curr, prev, label) {
+  if (curr === null || prev === null) {
+    return `<span class="change-pill pill-none"><span class="period-label">${label}</span> â</span>`;
+  }
+  const ch = fmtChange(curr, prev);
+  return `<span class="change-pill pill-${ch.cls}">${ch.arrow} ${ch.text} <span class="period-label">${label}</span></span>`;
+}
+
+function renderAll(data) {
+  _data = data;
+  buildTicker(data.searches);
+
+  if (data.last_updated) {
+    const d = new Date(data.last_updated);
+    document.getElementById('last-updated').textContent = 'Updated ' + d.toLocaleString();
+  }
+
+  const cutoff = _days > 0
+    ? new Date(Date.now() - _days * 86400000).toISOString().slice(0, 10)
+    : '0000-00-00';
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  Object.entries(data.searches).forEach(([sid, search]) => {
+    const hist = (search.history || []).filter(h => h.date >= cutoff);
+
+    const curr = getCpr(search, 0);
+    const prev1 = getCpr(search, 1);
+    const prev7 = getCpr(search, 7);
+
+    // Best result info
+    let bestCpr = curr;
+    let bestRetailer = '';
+    if (search.history && search.history.length) {
+      for (let i = search.history.length - 1; i >= 0; i--) {
+        if (search.history[i].results && search.history[i].results.length) {
+          bestRetailer = search.history[i].results[0].retailer;
+          break;
+        }
+      }
+    }
+
+    // Chart data
+    const labels = hist.map(h => h.date);
+    const prices = hist.map(h => h.results && h.results.length ? h.results[0].cpr : null);
+    const hasChart = prices.some(p => p \!== null);
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-title">${search.label}</div>
+        <div class="card-best">
+          ${bestCpr \!== null
+            ? `<div class="cpr">${bestCpr.toFixed(1)}Â¢</div><div class="retailer">${bestRetailer}</div>`
+            : `<div class="no-data">No data</div>`}
+        </div>
+      </div>
+      <div class="card-changes">
+        ${changePill(curr, prev1, '1d')}
+        ${changePill(curr, prev7, '7d')}
+      </div>
+      ${hasChart ? `<div class="chart-wrap"><canvas id="c-${sid}"></canvas></div>` : ''}
+      ${buildRows(search, cutoff)}
+    `;
+    grid.appendChild(card);
+
+    if (hasChart) {
+      const ctx = document.getElementById('c-' + sid).getContext('2d');
+      if (charts[sid]) charts[sid].destroy();
+      charts[sid] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: prices,
+            borderColor: '#58a6ff',
+            backgroundColor: 'rgba(88,166,255,0.08)',
+            borderWidth: 1.5,
+            pointRadius: prices.length <= 14 ? 3 : 0,
+            pointHoverRadius: 4,
+            spanGaps: true,
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => ctx.parsed.y \!== null ? ctx.parsed.y.toFixed(1) + 'Â¢' : 'No data' }
+          }},
+          scales: {
+            x: { display: false },
+            y: { display: true, ticks: { color: '#8b949e', font: { size: 10 }, callback: v => v.toFixed(0) + 'Â¢' },
+                 grid: { color: '#21262d' } }
+          }
+        }
+      });
+    }
+  });
+
+  const total = Object.keys(data.searches).length;
+  document.getElementById('footer').textContent = total + ' searches tracked';
+}
+
+function buildRows(search, cutoff) {
+  // Show best 2 results from latest scrape
+  if (\!search.history || \!search.history.length) return '';
+  let latest = null;
+  for (let i = search.history.length - 1; i >= 0; i--) {
+    if (search.history[i].results && search.history[i].results.length) {
+      latest = search.history[i]; break;
+    }
+  }
+  if (\!latest) return '';
+  const rows = latest.results.slice(0, 2).map(r =>
+    `<div class="card-row">
+      <span class="name">${r.retailer}</span>
+      <span class="price-info">
+        <span>${r.cpr_text || r.cpr.toFixed(1) + 'Â¢'}</span>
+        <span>${r.price}/${r.rounds}rd</span>
+        <span>${r.shipping === 'F' ? 'ð ship' : r.shipping ? '+$' + r.shipping + ' ship' : ''}</span>
+      </span>
+    </div>`
+  ).join('');
+  return `<div class="card-rows">${rows}</div>`;
+}
+
+// Fetch data
+fetch('ammo_prices.json?t=' + Date.now())
+  .then(r => r.json())
+  .then(renderAll)
+  .catch(e => {
+    document.getElementById('grid').innerHTML = '<div class="loading">Error loading data: ' + e.message + '</div>';
+  });
+</script>
 </body>
 </html>
