@@ -1,4 +1,4 @@
-<\!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -171,7 +171,7 @@ document.querySelectorAll('.range-btn').forEach(btn => {
 
 function getCpr(search, daysAgo) {
   const hist = search.history || [];
-  if (\!hist.length) return null;
+  if (!hist.length) return null;
   if (daysAgo === 0) {
     // Most recent entry with results
     for (let i = hist.length - 1; i >= 0; i--) {
@@ -210,7 +210,7 @@ function buildTicker(searches) {
     const d1    = fmtChange(curr, getCpr(s, 1));
     const d7    = fmtChange(curr, getCpr(s, 7));
 
-    const priceStr = curr \!== null ? curr.toFixed(1) + 'Â¢' : 'â';
+    const priceStr = curr !== null ? curr.toFixed(1) + 'Â¢' : 'â';
 
     let d1Html = '', d7Html = '';
     if (d1) {
@@ -278,7 +278,7 @@ function renderAll(data) {
     // Chart data
     const labels = hist.map(h => h.date);
     const prices = hist.map(h => h.results && h.results.length ? h.results[0].cpr : null);
-    const hasChart = prices.some(p => p \!== null);
+    const hasChart = prices.some(p => p !== null);
 
     const card = document.createElement('div');
     card.className = 'card';
@@ -286,7 +286,7 @@ function renderAll(data) {
       <div class="card-header">
         <div class="card-title">${search.label}</div>
         <div class="card-best">
-          ${bestCpr \!== null
+          ${bestCpr !== null
             ? `<div class="cpr">${bestCpr.toFixed(1)}Â¢</div><div class="retailer">${bestRetailer}</div>`
             : `<div class="no-data">No data</div>`}
         </div>
@@ -322,7 +322,7 @@ function renderAll(data) {
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: {
-            callbacks: { label: ctx => ctx.parsed.y \!== null ? ctx.parsed.y.toFixed(1) + 'Â¢' : 'No data' }
+            callbacks: { label: ctx => ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + 'Â¢' : 'No data' }
           }},
           scales: {
             x: { display: false },
@@ -340,14 +340,14 @@ function renderAll(data) {
 
 function buildRows(search, cutoff) {
   // Show best 2 results from latest scrape
-  if (\!search.history || \!search.history.length) return '';
+  if (!search.history || !search.history.length) return '';
   let latest = null;
   for (let i = search.history.length - 1; i >= 0; i--) {
     if (search.history[i].results && search.history[i].results.length) {
       latest = search.history[i]; break;
     }
   }
-  if (\!latest) return '';
+  if (!latest) return '';
   const rows = latest.results.slice(0, 2).map(r =>
     `<div class="card-row">
       <span class="name">${r.retailer}</span>
