@@ -9,7 +9,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
 
-  /* ââ TICKER BAR ââ */
+  /* == TICKER BAR == */
   #ticker-wrap {
     background: #161b22;
     border-bottom: 1px solid #30363d;
@@ -59,7 +59,7 @@
   .tick-period { font-size: 10px; color: #8b949e; font-weight: 400; }
   .tick-nodata { color: #484f58; font-style: italic; font-size: 12px; }
 
-  /* ââ HEADER ââ */
+  /* == HEADER == */
   .header {
     padding: 20px 24px 12px;
     display: flex;
@@ -79,7 +79,7 @@
   .range-btn:hover { border-color: #58a6ff; color: #58a6ff; }
   .range-btn.active { background: #1f6feb; border-color: #1f6feb; color: #fff; }
 
-  /* ââ GRID ââ */
+  /* == GRID == */
   #grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -136,13 +136,13 @@
 <body>
 
 <div id="ticker-wrap">
-  <div id="ticker-track"><span class="tick-item" style="color:#484f58">Loading pricesâ¦</span></div>
+  <div id="ticker-track"><span class="tick-item" style="color:#484f58">Loading prices...</span></div>
 </div>
 
 <div class="header">
   <div>
-    <h1>ð¯ Ammo Price Tracker</h1>
-    <div class="subtitle" id="last-updated">â</div>
+    <h1>Ammo Price Tracker</h1>
+    <div class="subtitle" id="last-updated"></div>
   </div>
   <div class="controls">
     <button class="range-btn" data-days="7">7d</button>
@@ -152,7 +152,7 @@
   </div>
 </div>
 
-<div id="grid"><div class="loading">Fetching pricesâ¦</div></div>
+<div id="grid"><div class="loading">Fetching prices...</div></div>
 <div id="footer"></div>
 
 <script>
@@ -199,9 +199,9 @@ function fmtChange(curr, prev) {
   if (curr === null || prev === null) return null;
   const diff = curr - prev;
   const sign = diff > 0 ? '+' : '';
-  const arrow = diff > 0 ? 'â²' : diff < 0 ? 'â¼' : 'â';
+  const arrow = diff > 0 ? '\u25b2' : diff < 0 ? '\u25bc' : '\u25cf';
   const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
-  return { text: sign + diff.toFixed(1) + 'Â¢', arrow, cls };
+  return { text: sign + diff.toFixed(1) + '\u00a2', arrow, cls };
 }
 
 function buildTicker(searches) {
@@ -210,14 +210,14 @@ function buildTicker(searches) {
     const d1    = fmtChange(curr, getCpr(s, 1));
     const d7    = fmtChange(curr, getCpr(s, 7));
 
-    const priceStr = curr !== null ? curr.toFixed(1) + 'Â¢' : 'â';
+    const priceStr = curr !== null ? curr.toFixed(1) + '\u00a2' : '--';
 
     let d1Html = '', d7Html = '';
     if (d1) {
       d1Html = `<span class="tick-change tick-${d1.cls}">${d1.arrow} ${d1.text}</span><span class="tick-period">1d</span>`;
     }
     if (d7) {
-      d7Html = `<span class="tick-sep">Â·</span><span class="tick-change tick-${d7.cls}">${d7.arrow} ${d7.text}</span><span class="tick-period">7d</span>`;
+      d7Html = `<span class="tick-sep">\u00b7</span><span class="tick-change tick-${d7.cls}">${d7.arrow} ${d7.text}</span><span class="tick-period">7d</span>`;
     }
 
     return `<span class="tick-item">
@@ -234,7 +234,7 @@ function buildTicker(searches) {
 
 function changePill(curr, prev, label) {
   if (curr === null || prev === null) {
-    return `<span class="change-pill pill-none"><span class="period-label">${label}</span> â</span>`;
+    return `<span class="change-pill pill-none"><span class="period-label">${label}</span> --</span>`;
   }
   const ch = fmtChange(curr, prev);
   return `<span class="change-pill pill-${ch.cls}">${ch.arrow} ${ch.text} <span class="period-label">${label}</span></span>`;
@@ -287,7 +287,7 @@ function renderAll(data) {
         <div class="card-title">${search.label}</div>
         <div class="card-best">
           ${bestCpr !== null
-            ? `<div class="cpr">${bestCpr.toFixed(1)}Â¢</div><div class="retailer">${bestRetailer}</div>`
+            ? `<div class="cpr">${bestCpr.toFixed(1)}&#162;</div><div class="retailer">${bestRetailer}</div>`
             : `<div class="no-data">No data</div>`}
         </div>
       </div>
@@ -322,11 +322,11 @@ function renderAll(data) {
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: {
-            callbacks: { label: ctx => ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + 'Â¢' : 'No data' }
+            callbacks: { label: ctx => ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + '\u00a2' : 'No data' }
           }},
           scales: {
             x: { display: false },
-            y: { display: true, ticks: { color: '#8b949e', font: { size: 10 }, callback: v => v.toFixed(0) + 'Â¢' },
+            y: { display: true, ticks: { color: '#8b949e', font: { size: 10 }, callback: v => v.toFixed(0) + '\u00a2' },
                  grid: { color: '#21262d' } }
           }
         }
@@ -352,9 +352,9 @@ function buildRows(search, cutoff) {
     `<div class="card-row">
       <span class="name">${r.retailer}</span>
       <span class="price-info">
-        <span>${r.cpr_text || r.cpr.toFixed(1) + 'Â¢'}</span>
+        <span>${r.cpr_text ? r.cpr_text.replace(/c$/, '\u00a2') : r.cpr.toFixed(1) + '\u00a2'}</span>
         <span>${r.price}/${r.rounds}rd</span>
-        <span>${r.shipping === 'F' ? 'ð ship' : r.shipping ? '+$' + r.shipping + ' ship' : ''}</span>
+        <span>${r.shipping === 'F' ? '&#x1F193; ship' : r.shipping ? '+$' + r.shipping + ' ship' : ''}</span>
       </span>
     </div>`
   ).join('');
